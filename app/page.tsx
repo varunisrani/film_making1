@@ -801,7 +801,7 @@ export default function Home() {
   };
 
   // Download JSON data
-  const downloadJson = (data, filename) => {
+  const downloadJson = (data: any, filename: string) => {
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
