@@ -527,39 +527,139 @@ const steps = [
 const API_BASE_URL = 'http://localhost:8000/api';
 
 // Define types for our data
+interface Scene {
+  scene_number: number;
+  location: string;
+  time_of_day: string;
+  description: string;
+  characters?: string[];
+  title?: string;
+  int_ext?: string;
+  time?: string;
+  metadata?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
 interface ScriptAnalysis {
   title?: string;
   author?: string;
   genre?: string;
   estimated_runtime?: string;
-  scenes?: any[];
-  [key: string]: any;
+  scenes?: Scene[];
+  total_characters?: number;
+  [key: string]: unknown;
+}
+
+interface ScheduleDay {
+  date: string;
+  location?: string;
+  call_time?: string;
+  wrap_time?: string;
+  scenes: ScheduleScene[];
+  cast_call_times: Record<string, string>;
+  [key: string]: unknown;
+}
+
+interface ScheduleScene extends Scene {
+  start_time?: string;
+  end_time?: string;
+  [key: string]: unknown;
+}
+
+interface Schedule {
+  shooting_days: ScheduleDay[];
+  [key: string]: unknown;
+}
+
+interface BudgetScene extends Scene {
+  cost?: number;
+  [key: string]: unknown;
+}
+
+interface BudgetDay {
+  date: string;
+  total: number;
+  categories: Record<string, number>;
+  scenes: BudgetScene[];
+  [key: string]: unknown;
+}
+
+interface Budget {
+  days: BudgetDay[];
+  total: number;
+  total_budget?: number;
+  per_day_average?: number;
+  contingency?: number;
+  [key: string]: unknown;
+}
+
+interface OneLiners {
+  scenes: {
+    scene_number: number;
+    one_liner: string;
+    [key: string]: unknown;
+  }[];
+  [key: string]: unknown;
+}
+
+interface Character {
+  name: string;
+  description: string;
+  scenes: number[];
+  role_type?: string;
+  age?: string | number;
+  emotional_arc?: string;
+  screen_time?: string | number;
+  [key: string]: unknown;
+}
+
+interface Characters {
+  characters: Character[];
+  [key: string]: unknown;
+}
+
+interface SystemSync {
+  sync_status: Record<string, string>;
+  total_scenes?: number;
+  shooting_days?: number;
+  total_budget?: number;
+  start_date?: string;
+  end_date?: string;
+  [key: string]: unknown;
 }
 
 interface ProcessedData {
   script_analysis: ScriptAnalysis | null;
-  schedule: any | null;
-  budget: any | null;
-  one_liners: any | null;
-  characters: any | null;
-  system_sync: any | null;
+  schedule: Schedule | null;
+  budget: Budget | null;
+  one_liners: OneLiners | null;
+  characters: Characters | null;
+  system_sync: SystemSync | null;
 }
 
 interface ApiStats {
   total_requests: number;
   average_response_time: number;
   success_rate: number;
-  [key: string]: any;
+  total_calls?: number;
+  avg_duration?: number;
+  [key: string]: unknown;
 }
 
 interface ApiLog {
   timestamp: string;
   endpoint: string;
   method: string;
-  status: number;
+  status: string | number;
   response_time: number;
   error?: string;
-  [key: string]: any;
+  provider?: string;
+  model?: string;
+  duration?: number;
+  prompt_length?: number;
+  response_length?: number;
+  metadata?: Record<string, unknown>;
+  [key: string]: unknown;
 }
 
 export default function Home() {
@@ -837,7 +937,7 @@ export default function Home() {
   };
 
   // Download JSON data
-  const downloadJson = (data: any, filename: string) => {
+  const downloadJson = (data: unknown, filename: string) => {
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -1696,7 +1796,7 @@ export default function Home() {
               Shooting Schedule
             </Typography>
 
-            {processedData.schedule.shooting_days.map((day: any, index: number) => (
+            {processedData.schedule.shooting_days.map((day, index: number) => (
               <Accordion key={index} sx={{ mb: 2 }}>
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                   <Typography variant="subtitle1">
@@ -1733,7 +1833,7 @@ export default function Home() {
                         <strong>Scenes:</strong>
                       </Typography>
                       <Grid container spacing={2}>
-                        {day.scenes.map((scene: any, i: number) => (
+                        {day.scenes.map((scene, i: number) => (
                           <Grid size={{ xs: 12, sm: 6, md: 4 }} key={i}>
                             <Card variant="outlined">
                               <CardContent>
@@ -1815,7 +1915,7 @@ export default function Home() {
                         Total Budget
                       </Typography>
                       <Typography variant="h3" color="primary">
-                        ${processedData.budget.total_budget.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                        ${processedData.budget.total_budget?.toLocaleString('en-US', { minimumFractionDigits: 2 }) ?? '0.00'}
                       </Typography>
                     </CardContent>
                   </Card>
@@ -1827,7 +1927,7 @@ export default function Home() {
                         Per Day Average
                       </Typography>
                       <Typography variant="h3" color="primary">
-                        ${processedData.budget.per_day_average.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                        ${processedData.budget.per_day_average?.toLocaleString('en-US', { minimumFractionDigits: 2 }) ?? '0.00'}
                       </Typography>
                     </CardContent>
                   </Card>
@@ -1839,7 +1939,7 @@ export default function Home() {
                         Contingency
                       </Typography>
                       <Typography variant="h3" color="primary">
-                        ${processedData.budget.contingency.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                        ${processedData.budget.contingency?.toLocaleString('en-US', { minimumFractionDigits: 2 }) ?? '0.00'}
                       </Typography>
                     </CardContent>
                   </Card>
@@ -1851,7 +1951,7 @@ export default function Home() {
               Day-wise Budget Breakdown
             </Typography>
 
-            {processedData.budget.days.map((day: any, index: number) => (
+            {processedData.budget.days.map((day, index: number) => (
               <Accordion key={index} sx={{ mb: 2 }}>
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                   <Typography variant="subtitle1">
@@ -1879,10 +1979,10 @@ export default function Home() {
                         <strong>Scene Costs:</strong>
                       </Typography>
                       <Box component="ul" sx={{ pl: 2 }}>
-                        {day.scenes.map((scene: any, i: number) => (
+                        {day.scenes.map((scene, i: number) => (
                           <li key={i}>
                             <Typography variant="body2">
-                              <strong>Scene {scene.scene_number}:</strong> ${scene.cost.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                              <strong>Scene {scene.scene_number}:</strong> ${scene.cost?.toLocaleString('en-US', { minimumFractionDigits: 2 }) ?? '0.00'}
                             </Typography>
                           </li>
                         ))}
@@ -1947,7 +2047,7 @@ export default function Home() {
                 Scene One-Liners
               </Typography>
               <Grid container spacing={2}>
-                {processedData.one_liners.scenes.map((scene: any, index: number) => (
+                {processedData.one_liners.scenes.map((scene, index: number) => (
                   <Grid size={{ xs: 12 }} key={index}>
                     <Card variant="outlined" sx={{ mb: 1 }}>
                       <CardContent>
@@ -2018,7 +2118,7 @@ export default function Home() {
             </Typography>
 
             <Grid container spacing={3}>
-              {processedData.characters.characters.map((character: any, index: number) => (
+              {processedData.characters.characters.map((character, index: number) => (
                 <Grid size={{ xs: 12, md: 6, lg: 4 }} key={index}>
                   <Card sx={{ height: '100%' }}>
                     <CardContent>
@@ -2165,7 +2265,7 @@ export default function Home() {
                         Total Budget
                       </Typography>
                       <Typography variant="h3" color="primary">
-                        ${processedData.system_sync.total_budget.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                        ${processedData.system_sync.total_budget?.toLocaleString('en-US', { minimumFractionDigits: 2 }) ?? '0.00'}
                       </Typography>
                     </CardContent>
                   </Card>
@@ -2287,7 +2387,7 @@ export default function Home() {
                               Avg. Response Time
                             </Typography>
                             <Typography variant="h3" color="primary">
-                              {apiStats.avg_duration.toFixed(2)}s
+                              {apiStats.avg_duration?.toFixed(2) ?? '0.00'}s
                             </Typography>
                           </CardContent>
                         </Card>
@@ -2313,7 +2413,7 @@ export default function Home() {
                           <Grid container spacing={2}>
                             <Grid size={{ xs: 12, md: 6 }}>
                               <Typography variant="body2">
-                                <strong>Duration:</strong> {log.duration.toFixed(2)}s
+                                <strong>Duration:</strong> {log.duration?.toFixed(2) ?? '0.00'}s
                               </Typography>
                               <Typography variant="body2">
                                 <strong>Prompt Length:</strong> {log.prompt_length} chars
