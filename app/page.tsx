@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { 
   Box, 
-  Container, 
   Typography, 
   Stepper, 
   Step, 
@@ -29,16 +28,9 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
-  useTheme,
   ThemeProvider,
   createTheme,
-  CssBaseline,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow
+  CssBaseline
 } from '@mui/material';
 
 // Icons
@@ -59,7 +51,6 @@ import DownloadIcon from '@mui/icons-material/Download';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import InfoIcon from '@mui/icons-material/Info';
-import SearchIcon from '@mui/icons-material/Search';
 
 // Create custom theme with enhanced design
 const lightTheme = createTheme({
