@@ -1,23 +1,23 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { 
-  Box, 
-  Typography, 
-  Stepper, 
-  Step, 
-  StepLabel, 
-  Button, 
-  Paper, 
-  TextField, 
-  CircularProgress, 
-  Grid, 
-  Card, 
-  CardContent, 
-  Divider, 
-  Chip, 
-  Accordion, 
-  AccordionSummary, 
+import {
+  Box,
+  Typography,
+  Stepper,
+  Step,
+  StepLabel,
+  Button,
+  Paper,
+  TextField,
+  CircularProgress,
+  Grid,
+  Card,
+  CardContent,
+  Divider,
+  Chip,
+  Accordion,
+  AccordionSummary,
   AccordionDetails,
   AppBar,
   Toolbar,
@@ -526,6 +526,42 @@ const steps = [
 // API base URL
 const API_BASE_URL = 'http://localhost:8000/api';
 
+// Define types for our data
+interface ScriptAnalysis {
+  title?: string;
+  author?: string;
+  genre?: string;
+  estimated_runtime?: string;
+  scenes?: any[];
+  [key: string]: any;
+}
+
+interface ProcessedData {
+  script_analysis: ScriptAnalysis | null;
+  schedule: any | null;
+  budget: any | null;
+  one_liners: any | null;
+  characters: any | null;
+  system_sync: any | null;
+}
+
+interface ApiStats {
+  total_requests: number;
+  average_response_time: number;
+  success_rate: number;
+  [key: string]: any;
+}
+
+interface ApiLog {
+  timestamp: string;
+  endpoint: string;
+  method: string;
+  status: number;
+  response_time: number;
+  error?: string;
+  [key: string]: any;
+}
+
 export default function Home() {
   const [darkMode, setDarkMode] = useState(false);
   const theme = darkMode ? darkTheme : lightTheme;
@@ -533,7 +569,7 @@ export default function Home() {
   const [activeStep, setActiveStep] = useState(0);
   const [scriptText, setScriptText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [processedData, setProcessedData] = useState({
+  const [processedData, setProcessedData] = useState<ProcessedData>({
     script_analysis: null,
     schedule: null,
     budget: null,
@@ -541,8 +577,8 @@ export default function Home() {
     characters: null,
     system_sync: null,
   });
-  const [apiStats, setApiStats] = useState(null);
-  const [apiLogs, setApiLogs] = useState([]);
+  const [apiStats, setApiStats] = useState<ApiStats | null>(null);
+  const [apiLogs, setApiLogs] = useState<ApiLog[]>([]);
 
   // Handle drawer toggle
   const handleDrawerToggle = () => {
@@ -583,7 +619,7 @@ export default function Home() {
   // Process script
   const processScript = async () => {
     if (!scriptText) return;
-    
+
     setIsLoading(true);
     try {
       // Call script analysis API
@@ -594,12 +630,12 @@ export default function Home() {
         },
         body: JSON.stringify({ script_text: scriptText }),
       });
-      
+
       if (!response.ok) throw new Error('Failed to analyze script');
-      
+
       const scriptAnalysis = await response.json();
       setProcessedData({ ...processedData, script_analysis: scriptAnalysis });
-      
+
       // Move to next step
       handleNext();
     } catch (error) {
@@ -613,7 +649,7 @@ export default function Home() {
   // Process scheduling
   const processScheduling = async () => {
     if (!processedData.script_analysis) return;
-    
+
     setIsLoading(true);
     try {
       const response = await fetch(`${API_BASE_URL}/schedule`, {
@@ -623,12 +659,12 @@ export default function Home() {
         },
         body: JSON.stringify(processedData.script_analysis),
       });
-      
+
       if (!response.ok) throw new Error('Failed to create schedule');
-      
+
       const scheduleData = await response.json();
       setProcessedData({ ...processedData, schedule: scheduleData });
-      
+
       // Move to next step
       handleNext();
     } catch (error) {
@@ -642,7 +678,7 @@ export default function Home() {
   // Process budgeting
   const processBudgeting = async () => {
     if (!processedData.script_analysis || !processedData.schedule) return;
-    
+
     setIsLoading(true);
     try {
       const response = await fetch(`${API_BASE_URL}/budget`, {
@@ -655,12 +691,12 @@ export default function Home() {
           schedule: processedData.schedule,
         }),
       });
-      
+
       if (!response.ok) throw new Error('Failed to create budget');
-      
+
       const budgetData = await response.json();
       setProcessedData({ ...processedData, budget: budgetData });
-      
+
       // Move to next step
       handleNext();
     } catch (error) {
@@ -674,7 +710,7 @@ export default function Home() {
   // Process one-liners
   const processOneLiners = async () => {
     if (!processedData.script_analysis) return;
-    
+
     setIsLoading(true);
     try {
       const response = await fetch(`${API_BASE_URL}/one-liners`, {
@@ -684,12 +720,12 @@ export default function Home() {
         },
         body: JSON.stringify(processedData.script_analysis),
       });
-      
+
       if (!response.ok) throw new Error('Failed to create one-liners');
-      
+
       const oneLinersData = await response.json();
       setProcessedData({ ...processedData, one_liners: oneLinersData });
-      
+
       // Move to next step
       handleNext();
     } catch (error) {
@@ -703,7 +739,7 @@ export default function Home() {
   // Process characters
   const processCharacters = async () => {
     if (!processedData.script_analysis) return;
-    
+
     setIsLoading(true);
     try {
       const response = await fetch(`${API_BASE_URL}/characters`, {
@@ -713,12 +749,12 @@ export default function Home() {
         },
         body: JSON.stringify(processedData.script_analysis),
       });
-      
+
       if (!response.ok) throw new Error('Failed to analyze characters');
-      
+
       const charactersData = await response.json();
       setProcessedData({ ...processedData, characters: charactersData });
-      
+
       // Move to next step
       handleNext();
     } catch (error) {
@@ -731,10 +767,10 @@ export default function Home() {
 
   // Process system sync
   const processSystemSync = async () => {
-    if (!processedData.script_analysis || !processedData.schedule || 
-        !processedData.budget || !processedData.one_liners || 
+    if (!processedData.script_analysis || !processedData.schedule ||
+        !processedData.budget || !processedData.one_liners ||
         !processedData.characters) return;
-    
+
     setIsLoading(true);
     try {
       const response = await fetch(`${API_BASE_URL}/system-sync`, {
@@ -744,12 +780,12 @@ export default function Home() {
         },
         body: JSON.stringify(processedData),
       });
-      
+
       if (!response.ok) throw new Error('Failed to sync system');
-      
+
       const systemData = await response.json();
       setProcessedData({ ...processedData, system_sync: systemData });
-      
+
       // Move to next step
       handleNext();
     } catch (error) {
@@ -769,7 +805,7 @@ export default function Home() {
       if (!statsResponse.ok) throw new Error('Failed to fetch API stats');
       const statsData = await statsResponse.json();
       setApiStats(statsData);
-      
+
       // Fetch logs
       const logsResponse = await fetch(`${API_BASE_URL}/logs`);
       if (!logsResponse.ok) throw new Error('Failed to fetch API logs');
@@ -789,9 +825,9 @@ export default function Home() {
       const response = await fetch(`${API_BASE_URL}/logs`, {
         method: 'DELETE',
       });
-      
+
       if (!response.ok) throw new Error('Failed to clear logs');
-      
+
       alert('Logs cleared successfully!');
       fetchApiLogs();
     } catch (error) {
@@ -821,26 +857,26 @@ export default function Home() {
   }, [activeStep]);
 
   // Render step content
-  const getStepContent = (step) => {
+  const getStepContent = (step: number) => {
     switch (step) {
       case 0: // Upload Script
         return (
           <Box>
-            <Box 
-              sx={{ 
-                textAlign: 'center', 
+            <Box
+              sx={{
+                textAlign: 'center',
                 mb: 5,
                 animation: 'fadeIn 0.8s ease-out',
               }}
             >
-              <Typography 
-                variant="h3" 
+              <Typography
+                variant="h3"
                 gutterBottom
-                sx={{ 
+                sx={{
                   fontWeight: 800,
                   mb: 2,
-                  background: theme.palette.mode === 'dark' 
-                    ? 'linear-gradient(90deg, #a4b8ff, #ff90d1)' 
+                  background: theme.palette.mode === 'dark'
+                    ? 'linear-gradient(90deg, #a4b8ff, #ff90d1)'
                     : 'linear-gradient(90deg, #4361ee, #f72585)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
@@ -849,11 +885,11 @@ export default function Home() {
               >
                 Welcome to the Film Production AI Assistant
               </Typography>
-              <Typography 
-                variant="h6" 
-                sx={{ 
-                  maxWidth: '800px', 
-                  mx: 'auto', 
+              <Typography
+                variant="h6"
+                sx={{
+                  maxWidth: '800px',
+                  mx: 'auto',
                   mb: 4,
                   color: theme.palette.text.secondary,
                   fontWeight: 400,
@@ -862,7 +898,7 @@ export default function Home() {
               >
                 Transform your script into a complete production plan with our AI-powered tools
               </Typography>
-              
+
               <Grid container spacing={3} justifyContent="center" sx={{ mb: 4 }}>
                 {[
                   { icon: <AnalyticsIcon fontSize="large" />, title: 'Scene Analysis', desc: 'Detailed breakdown of each scene' },
@@ -870,9 +906,9 @@ export default function Home() {
                   { icon: <AttachMoneyIcon fontSize="large" />, title: 'Budgeting', desc: 'Comprehensive budget estimates' },
                   { icon: <PeopleIcon fontSize="large" />, title: 'Characters', desc: 'Complete character breakdowns' },
                 ].map((feature, index) => (
-                  <Grid item xs={12} sm={6} md={3} key={index}>
-                    <Card 
-                      sx={{ 
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index}>
+                    <Card
+                      sx={{
                         height: '100%',
                         display: 'flex',
                         flexDirection: 'column',
@@ -885,8 +921,8 @@ export default function Home() {
                         },
                       }}
                     >
-                      <Box 
-                        sx={{ 
+                      <Box
+                        sx={{
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
@@ -894,8 +930,8 @@ export default function Home() {
                           height: 70,
                           borderRadius: '50%',
                           mb: 2,
-                          background: theme.palette.mode === 'dark' 
-                            ? 'linear-gradient(135deg, rgba(115, 139, 255, 0.2), rgba(255, 94, 177, 0.2))' 
+                          background: theme.palette.mode === 'dark'
+                            ? 'linear-gradient(135deg, rgba(115, 139, 255, 0.2), rgba(255, 94, 177, 0.2))'
                             : 'linear-gradient(135deg, rgba(67, 97, 238, 0.1), rgba(247, 37, 133, 0.1))',
                           color: theme.palette.mode === 'dark' ? '#738bff' : '#4361ee',
                         }}
@@ -913,13 +949,13 @@ export default function Home() {
                 ))}
               </Grid>
             </Box>
-            
+
             <Grid container spacing={4}>
-              <Grid item xs={12} md={6}>
-                <Paper 
-                  elevation={0} 
-                  sx={{ 
-                    p: 4, 
+              <Grid size={{ xs: 12, md: 6 }}>
+                <Paper
+                  elevation={0}
+                  sx={{
+                    p: 4,
                     height: '100%',
                     display: 'flex',
                     flexDirection: 'column',
@@ -932,21 +968,21 @@ export default function Home() {
                       left: 0,
                       right: 0,
                       height: '4px',
-                      background: theme.palette.mode === 'dark' 
-                        ? 'linear-gradient(90deg, #738bff, #ff5eb1)' 
+                      background: theme.palette.mode === 'dark'
+                        ? 'linear-gradient(90deg, #738bff, #ff5eb1)'
                         : 'linear-gradient(90deg, #4361ee, #f72585)',
                     },
                   }}
                 >
-                  <Box 
-                    sx={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
                       mb: 3,
                     }}
                   >
-                    <Box 
-                      sx={{ 
+                    <Box
+                      sx={{
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -954,8 +990,8 @@ export default function Home() {
                         height: 50,
                         borderRadius: '50%',
                         mr: 2,
-                        background: theme.palette.mode === 'dark' 
-                          ? 'linear-gradient(135deg, rgba(115, 139, 255, 0.2), rgba(255, 94, 177, 0.2))' 
+                        background: theme.palette.mode === 'dark'
+                          ? 'linear-gradient(135deg, rgba(115, 139, 255, 0.2), rgba(255, 94, 177, 0.2))'
                           : 'linear-gradient(135deg, rgba(67, 97, 238, 0.1), rgba(247, 37, 133, 0.1))',
                         color: theme.palette.mode === 'dark' ? '#738bff' : '#4361ee',
                       }}
@@ -966,9 +1002,9 @@ export default function Home() {
                       Upload your script file
                     </Typography>
                   </Box>
-                  
-                  <Box 
-                    sx={{ 
+
+                  <Box
+                    sx={{
                       border: `2px dashed ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)'}`,
                       borderRadius: 3,
                       p: 4,
@@ -989,32 +1025,32 @@ export default function Home() {
                       onChange={handleScriptUpload}
                     />
                     <label htmlFor="script-upload">
-                      <Box 
-                        sx={{ 
+                      <Box
+                        sx={{
                           display: 'flex',
                           flexDirection: 'column',
                           alignItems: 'center',
                           cursor: 'pointer',
                         }}
                       >
-                        <UploadFileIcon 
-                          sx={{ 
-                            fontSize: 60, 
+                        <UploadFileIcon
+                          sx={{
+                            fontSize: 60,
                             mb: 2,
                             color: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.3)',
-                          }} 
+                          }}
                         />
                         <Typography variant="h6" gutterBottom>
                           Drag & drop your file here
                         </Typography>
-                        <Typography variant="body2" color="textSecondary" paragraph>
+                        <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
                           or click to browse files
                         </Typography>
                         <Button
                           variant="outlined"
                           component="span"
                           startIcon={<UploadFileIcon />}
-                          sx={{ 
+                          sx={{
                             mt: 1,
                             borderWidth: 2,
                           }}
@@ -1024,7 +1060,7 @@ export default function Home() {
                       </Box>
                     </label>
                   </Box>
-                  
+
                   <Box sx={{ mt: 'auto' }}>
                     <Typography variant="body2" color="textSecondary" sx={{ display: 'flex', alignItems: 'center' }}>
                       <InfoIcon fontSize="small" sx={{ mr: 1, opacity: 0.7 }} />
@@ -1033,12 +1069,12 @@ export default function Home() {
                   </Box>
                 </Paper>
               </Grid>
-              
-              <Grid item xs={12} md={6}>
-                <Paper 
-                  elevation={0} 
-                  sx={{ 
-                    p: 4, 
+
+              <Grid size={{ xs: 12, md: 6 }}>
+                <Paper
+                  elevation={0}
+                  sx={{
+                    p: 4,
                     height: '100%',
                     display: 'flex',
                     flexDirection: 'column',
@@ -1051,21 +1087,21 @@ export default function Home() {
                       left: 0,
                       right: 0,
                       height: '4px',
-                      background: theme.palette.mode === 'dark' 
-                        ? 'linear-gradient(90deg, #ff5eb1, #738bff)' 
+                      background: theme.palette.mode === 'dark'
+                        ? 'linear-gradient(90deg, #ff5eb1, #738bff)'
                         : 'linear-gradient(90deg, #f72585, #4361ee)',
                     },
                   }}
                 >
-                  <Box 
-                    sx={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
                       mb: 3,
                     }}
                   >
-                    <Box 
-                      sx={{ 
+                    <Box
+                      sx={{
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -1073,8 +1109,8 @@ export default function Home() {
                         height: 50,
                         borderRadius: '50%',
                         mr: 2,
-                        background: theme.palette.mode === 'dark' 
-                          ? 'linear-gradient(135deg, rgba(255, 94, 177, 0.2), rgba(115, 139, 255, 0.2))' 
+                        background: theme.palette.mode === 'dark'
+                          ? 'linear-gradient(135deg, rgba(255, 94, 177, 0.2), rgba(115, 139, 255, 0.2))'
                           : 'linear-gradient(135deg, rgba(247, 37, 133, 0.1), rgba(67, 97, 238, 0.1))',
                         color: theme.palette.mode === 'dark' ? '#ff5eb1' : '#f72585',
                       }}
@@ -1085,7 +1121,7 @@ export default function Home() {
                       Or paste your script here
                     </Typography>
                   </Box>
-                  
+
                   <TextField
                     fullWidth
                     multiline
@@ -1094,7 +1130,7 @@ export default function Home() {
                     value={scriptText}
                     onChange={(e) => setScriptText(e.target.value)}
                     placeholder="Paste your script text here..."
-                    sx={{ 
+                    sx={{
                       mb: 3,
                       '& .MuiOutlinedInput-root': {
                         borderRadius: 3,
@@ -1102,7 +1138,7 @@ export default function Home() {
                       },
                     }}
                   />
-                  
+
                   <Box sx={{ mt: 'auto', display: 'flex', justifyContent: 'flex-end' }}>
                     <Button
                       variant="contained"
@@ -1110,21 +1146,21 @@ export default function Home() {
                       disabled={!scriptText || isLoading}
                       onClick={processScript}
                       startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <AnalyticsIcon />}
-                      sx={{ 
+                      sx={{
                         px: 4,
                         py: 1.5,
-                        background: theme.palette.mode === 'dark' 
-                          ? 'linear-gradient(90deg, #ff5eb1, #738bff)' 
+                        background: theme.palette.mode === 'dark'
+                          ? 'linear-gradient(90deg, #ff5eb1, #738bff)'
                           : 'linear-gradient(90deg, #f72585, #4361ee)',
                         '&:hover': {
-                          background: theme.palette.mode === 'dark' 
-                            ? 'linear-gradient(90deg, #cc4a8e, #5a6ecc)' 
+                          background: theme.palette.mode === 'dark'
+                            ? 'linear-gradient(90deg, #cc4a8e, #5a6ecc)'
                             : 'linear-gradient(90deg, #c51e6a, #354db8)',
                         },
                         '&.Mui-disabled': {
                           opacity: 0.5,
-                          background: theme.palette.mode === 'dark' 
-                            ? 'linear-gradient(90deg, #ff5eb1, #738bff)' 
+                          background: theme.palette.mode === 'dark'
+                            ? 'linear-gradient(90deg, #ff5eb1, #738bff)'
                             : 'linear-gradient(90deg, #f72585, #4361ee)',
                           color: 'white',
                         },
@@ -1138,18 +1174,18 @@ export default function Home() {
             </Grid>
           </Box>
         );
-        
+
       case 1: // Script Analysis
         if (!processedData.script_analysis) {
           return (
             <Box sx={{ textAlign: 'center', py: 8 }}>
-              <Box 
-                sx={{ 
+              <Box
+                sx={{
                   width: 120,
                   height: 120,
                   borderRadius: '50%',
-                  background: theme.palette.mode === 'dark' 
-                    ? 'linear-gradient(135deg, rgba(115, 139, 255, 0.1), rgba(255, 94, 177, 0.1))' 
+                  background: theme.palette.mode === 'dark'
+                    ? 'linear-gradient(135deg, rgba(115, 139, 255, 0.1), rgba(255, 94, 177, 0.1))'
                     : 'linear-gradient(135deg, rgba(67, 97, 238, 0.05), rgba(247, 37, 133, 0.05))',
                   display: 'flex',
                   alignItems: 'center',
@@ -1158,16 +1194,16 @@ export default function Home() {
                   mb: 4,
                 }}
               >
-                <AnalyticsIcon 
-                  sx={{ 
+                <AnalyticsIcon
+                  sx={{
                     fontSize: 60,
                     color: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)',
-                  }} 
+                  }}
                 />
               </Box>
-              <Typography 
-                variant="h4" 
-                sx={{ 
+              <Typography
+                variant="h4"
+                sx={{
                   fontWeight: 700,
                   mb: 2,
                   color: theme.palette.text.primary,
@@ -1175,12 +1211,12 @@ export default function Home() {
               >
                 No Script Analysis Available
               </Typography>
-              <Typography 
-                variant="body1" 
-                color="textSecondary" 
-                sx={{ 
-                  maxWidth: 500, 
-                  mx: 'auto', 
+              <Typography
+                variant="body1"
+                color="textSecondary"
+                sx={{
+                  maxWidth: 500,
+                  mx: 'auto',
                   mb: 4,
                   fontSize: '1.1rem',
                 }}
@@ -1192,15 +1228,15 @@ export default function Home() {
                 size="large"
                 onClick={() => setActiveStep(0)}
                 startIcon={<UploadFileIcon />}
-                sx={{ 
+                sx={{
                   px: 4,
                   py: 1.5,
-                  background: theme.palette.mode === 'dark' 
-                    ? 'linear-gradient(90deg, #738bff, #ff5eb1)' 
+                  background: theme.palette.mode === 'dark'
+                    ? 'linear-gradient(90deg, #738bff, #ff5eb1)'
                     : 'linear-gradient(90deg, #4361ee, #f72585)',
                   '&:hover': {
-                    background: theme.palette.mode === 'dark' 
-                      ? 'linear-gradient(90deg, #5a6ecc, #cc4a8e)' 
+                    background: theme.palette.mode === 'dark'
+                      ? 'linear-gradient(90deg, #5a6ecc, #cc4a8e)'
                       : 'linear-gradient(90deg, #354db8, #c51e6a)',
                   },
                 }}
@@ -1210,17 +1246,17 @@ export default function Home() {
             </Box>
           );
         }
-        
+
         return (
           <Box>
             <Box sx={{ mb: 4 }}>
-              <Typography 
-                variant="h4" 
-                sx={{ 
+              <Typography
+                variant="h4"
+                sx={{
                   fontWeight: 700,
                   mb: 1,
-                  background: theme.palette.mode === 'dark' 
-                    ? 'linear-gradient(90deg, #a4b8ff, #ff90d1)' 
+                  background: theme.palette.mode === 'dark'
+                    ? 'linear-gradient(90deg, #a4b8ff, #ff90d1)'
                     : 'linear-gradient(90deg, #4361ee, #f72585)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
@@ -1228,60 +1264,60 @@ export default function Home() {
               >
                 {processedData.script_analysis.title || 'Script Analysis'}
               </Typography>
-              <Typography 
-                variant="subtitle1" 
+              <Typography
+                variant="subtitle1"
                 color="textSecondary"
                 sx={{ mb: 3 }}
               >
                 by {processedData.script_analysis.author || 'Unknown Author'}
               </Typography>
-              
-              <Box 
-                sx={{ 
-                  display: 'flex', 
-                  flexWrap: 'wrap', 
+
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
                   gap: 1,
                   mb: 4,
                 }}
               >
-                <Chip 
-                  label={`Genre: ${processedData.script_analysis.genre || 'Drama'}`} 
-                  color="primary" 
+                <Chip
+                  label={`Genre: ${processedData.script_analysis.genre || 'Drama'}`}
+                  color="primary"
                   variant="outlined"
                   sx={{ fontWeight: 500 }}
                 />
-                <Chip 
-                  label={`Runtime: ${processedData.script_analysis.estimated_runtime || '90'} min`} 
-                  color="secondary" 
+                <Chip
+                  label={`Runtime: ${processedData.script_analysis.estimated_runtime || '90'} min`}
+                  color="secondary"
                   variant="outlined"
                   sx={{ fontWeight: 500 }}
                 />
-                <Chip 
-                  label={`${processedData.script_analysis.scenes?.length || '0'} Scenes`} 
-                  color="info" 
+                <Chip
+                  label={`${processedData.script_analysis.scenes?.length || '0'} Scenes`}
+                  color="info"
                   variant="outlined"
                   sx={{ fontWeight: 500 }}
                 />
-                <Chip 
-                  label={`${processedData.script_analysis.total_characters || '0'} Characters`} 
-                  color="success" 
+                <Chip
+                  label={`${processedData.script_analysis.total_characters || '0'} Characters`}
+                  color="success"
                   variant="outlined"
                   sx={{ fontWeight: 500 }}
                 />
               </Box>
             </Box>
-            
-            <Typography 
-              variant="h5" 
-              sx={{ 
+
+            <Typography
+              variant="h5"
+              sx={{
                 fontWeight: 600,
                 mb: 3,
                 display: 'flex',
                 alignItems: 'center',
               }}
             >
-              <Box 
-                sx={{ 
+              <Box
+                sx={{
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -1289,8 +1325,8 @@ export default function Home() {
                   height: 40,
                   borderRadius: '50%',
                   mr: 2,
-                  background: theme.palette.mode === 'dark' 
-                    ? 'linear-gradient(135deg, rgba(115, 139, 255, 0.2), rgba(255, 94, 177, 0.2))' 
+                  background: theme.palette.mode === 'dark'
+                    ? 'linear-gradient(135deg, rgba(115, 139, 255, 0.2), rgba(255, 94, 177, 0.2))'
                     : 'linear-gradient(135deg, rgba(67, 97, 238, 0.1), rgba(247, 37, 133, 0.1))',
                   color: theme.palette.mode === 'dark' ? '#738bff' : '#4361ee',
                 }}
@@ -1299,37 +1335,37 @@ export default function Home() {
               </Box>
               Scene Breakdown
             </Typography>
-            
+
             {processedData.script_analysis.scenes?.map((scene, index) => (
-              <Accordion 
-                key={index} 
-                sx={{ 
+              <Accordion
+                key={index}
+                sx={{
                   mb: 2,
                   borderRadius: '16px !important',
                   overflow: 'hidden',
                   '&:before': {
                     display: 'none',
                   },
-                  boxShadow: theme.palette.mode === 'dark' 
-                    ? '0 4px 20px 0 rgba(0,0,0,0.1)' 
+                  boxShadow: theme.palette.mode === 'dark'
+                    ? '0 4px 20px 0 rgba(0,0,0,0.1)'
                     : '0 4px 20px 0 rgba(0,0,0,0.03)',
                   border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'}`,
                   transition: 'all 0.3s ease',
                   '&:hover': {
-                    boxShadow: theme.palette.mode === 'dark' 
-                      ? '0 8px 25px 0 rgba(0,0,0,0.15)' 
+                    boxShadow: theme.palette.mode === 'dark'
+                      ? '0 8px 25px 0 rgba(0,0,0,0.15)'
                       : '0 8px 25px 0 rgba(0,0,0,0.06)',
                   },
                 }}
               >
-                <AccordionSummary 
+                <AccordionSummary
                   expandIcon={
-                    <ExpandMoreIcon sx={{ 
+                    <ExpandMoreIcon sx={{
                       transition: 'transform 0.3s ease',
                       color: theme.palette.mode === 'dark' ? '#738bff' : '#4361ee',
                     }} />
                   }
-                  sx={{ 
+                  sx={{
                     borderBottom: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)'}`,
                     '&.Mui-expanded': {
                       borderBottom: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'}`,
@@ -1337,42 +1373,42 @@ export default function Home() {
                   }}
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-                    <Chip 
-                      label={`Scene ${scene.scene_number}`} 
+                    <Chip
+                      label={`Scene ${scene.scene_number}`}
                       color="primary"
                       size="small"
-                      sx={{ 
+                      sx={{
                         mr: 2,
                         fontWeight: 600,
                         minWidth: 80,
                         textAlign: 'center',
                       }}
                     />
-                    <Typography 
+                    <Typography
                       variant="subtitle1"
-                      sx={{ 
+                      sx={{
                         fontWeight: 600,
                         flexGrow: 1,
                       }}
                     >
                       {scene.title || scene.location || `Scene ${scene.scene_number}`}
                     </Typography>
-                    <Box 
-                      sx={{ 
+                    <Box
+                      sx={{
                         display: { xs: 'none', md: 'flex' },
                         alignItems: 'center',
                         gap: 1,
                       }}
                     >
-                      <Chip 
-                        label={scene.int_ext || 'INT'} 
+                      <Chip
+                        label={scene.int_ext || 'INT'}
                         size="small"
                         color={scene.int_ext?.toLowerCase().includes('int') ? 'primary' : 'secondary'}
                         variant="outlined"
                         sx={{ fontWeight: 500 }}
                       />
-                      <Chip 
-                        label={scene.time_of_day || scene.time || 'DAY'} 
+                      <Chip
+                        label={scene.time_of_day || scene.time || 'DAY'}
                         size="small"
                         color="default"
                         variant="outlined"
@@ -1383,39 +1419,39 @@ export default function Home() {
                 </AccordionSummary>
                 <AccordionDetails sx={{ p: 3 }}>
                   <Grid container spacing={3}>
-                    <Grid item xs={12} md={6}>
-                      <Box 
-                        sx={{ 
+                    <Grid size={{ xs: 12, md: 6 }}>
+                      <Box
+                        sx={{
                           p: 2,
                           borderRadius: 2,
                           backgroundColor: theme.palette.mode === 'dark' ? 'rgba(19, 47, 76, 0.4)' : 'rgba(248, 249, 250, 0.8)',
                           height: '100%',
                         }}
                       >
-                        <Typography 
-                          variant="subtitle2" 
+                        <Typography
+                          variant="subtitle2"
                           color="textSecondary"
                           gutterBottom
-                          sx={{ 
+                          sx={{
                             display: 'flex',
                             alignItems: 'center',
                             mb: 2,
                           }}
                         >
-                          <Box 
-                            component="span" 
-                            sx={{ 
-                              width: 8, 
-                              height: 8, 
-                              borderRadius: '50%', 
+                          <Box
+                            component="span"
+                            sx={{
+                              width: 8,
+                              height: 8,
+                              borderRadius: '50%',
                               bgcolor: theme.palette.primary.main,
                               display: 'inline-block',
                               mr: 1,
-                            }} 
+                            }}
                           />
                           SCENE DETAILS
                         </Typography>
-                        
+
                         <Box sx={{ mb: 2 }}>
                           <Typography variant="body2" color="textSecondary" gutterBottom>
                             Location
@@ -1424,40 +1460,40 @@ export default function Home() {
                             {scene.location || 'Unknown location'}
                           </Typography>
                         </Box>
-                        
+
                         <Box sx={{ mb: 2 }}>
                           <Typography variant="body2" color="textSecondary" gutterBottom>
                             Setting
                           </Typography>
                           <Box sx={{ display: 'flex', gap: 1 }}>
-                            <Chip 
-                              label={scene.int_ext || 'INT'} 
+                            <Chip
+                              label={scene.int_ext || 'INT'}
                               size="small"
                               color={scene.int_ext?.toLowerCase().includes('int') ? 'primary' : 'secondary'}
                               sx={{ fontWeight: 500 }}
                             />
-                            <Chip 
-                              label={scene.time_of_day || scene.time || 'DAY'} 
+                            <Chip
+                              label={scene.time_of_day || scene.time || 'DAY'}
                               size="small"
                               sx={{ fontWeight: 500 }}
                             />
                           </Box>
                         </Box>
-                        
+
                         <Box>
                           <Typography variant="body2" color="textSecondary" gutterBottom>
                             Characters
                           </Typography>
                           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                            {(scene.characters || []).map((char, i) => (
-                              <Chip 
-                                key={i} 
-                                label={char} 
+                            {(scene.characters || []).map((char: string, i: number) => (
+                              <Chip
+                                key={i}
+                                label={char}
                                 size="small"
-                                sx={{ 
+                                sx={{
                                   fontWeight: 500,
-                                  backgroundColor: theme.palette.mode === 'dark' 
-                                    ? 'rgba(115, 139, 255, 0.1)' 
+                                  backgroundColor: theme.palette.mode === 'dark'
+                                    ? 'rgba(115, 139, 255, 0.1)'
                                     : 'rgba(67, 97, 238, 0.05)',
                                 }}
                               />
@@ -1471,43 +1507,43 @@ export default function Home() {
                         </Box>
                       </Box>
                     </Grid>
-                    
-                    <Grid item xs={12} md={6}>
-                      <Box 
-                        sx={{ 
+
+                    <Grid size={{ xs: 12, md: 6 }}>
+                      <Box
+                        sx={{
                           p: 2,
                           borderRadius: 2,
                           backgroundColor: theme.palette.mode === 'dark' ? 'rgba(19, 47, 76, 0.4)' : 'rgba(248, 249, 250, 0.8)',
                           height: '100%',
                         }}
                       >
-                        <Typography 
-                          variant="subtitle2" 
+                        <Typography
+                          variant="subtitle2"
                           color="textSecondary"
                           gutterBottom
-                          sx={{ 
+                          sx={{
                             display: 'flex',
                             alignItems: 'center',
                             mb: 2,
                           }}
                         >
-                          <Box 
-                            component="span" 
-                            sx={{ 
-                              width: 8, 
-                              height: 8, 
-                              borderRadius: '50%', 
+                          <Box
+                            component="span"
+                            sx={{
+                              width: 8,
+                              height: 8,
+                              borderRadius: '50%',
                               bgcolor: theme.palette.secondary.main,
                               display: 'inline-block',
                               mr: 1,
-                            }} 
+                            }}
                           />
                           DESCRIPTION
                         </Typography>
-                        
-                        <Typography 
-                          variant="body1" 
-                          sx={{ 
+
+                        <Typography
+                          variant="body1"
+                          sx={{
                             lineHeight: 1.6,
                             fontStyle: 'italic',
                             color: theme.palette.text.primary,
@@ -1517,51 +1553,51 @@ export default function Home() {
                         </Typography>
                       </Box>
                     </Grid>
-                    
+
                     {scene.metadata && (
-                      <Grid item xs={12}>
-                        <Box 
-                          sx={{ 
+                      <Grid size={{ xs: 12 }}>
+                        <Box
+                          sx={{
                             p: 2,
                             borderRadius: 2,
                             backgroundColor: theme.palette.mode === 'dark' ? 'rgba(19, 47, 76, 0.4)' : 'rgba(248, 249, 250, 0.8)',
                           }}
                         >
-                          <Typography 
-                            variant="subtitle2" 
+                          <Typography
+                            variant="subtitle2"
                             color="textSecondary"
                             gutterBottom
-                            sx={{ 
+                            sx={{
                               display: 'flex',
                               alignItems: 'center',
                               mb: 2,
                             }}
                           >
-                            <Box 
-                              component="span" 
-                              sx={{ 
-                                width: 8, 
-                                height: 8, 
-                                borderRadius: '50%', 
+                            <Box
+                              component="span"
+                              sx={{
+                                width: 8,
+                                height: 8,
+                                borderRadius: '50%',
                                 bgcolor: theme.palette.info.main,
                                 display: 'inline-block',
                                 mr: 1,
-                              }} 
+                              }}
                             />
                             METADATA
                           </Typography>
-                          
-                          <Paper 
-                            variant="outlined" 
-                            sx={{ 
-                              p: 2, 
+
+                          <Paper
+                            variant="outlined"
+                            sx={{
+                              p: 2,
                               bgcolor: theme.palette.mode === 'dark' ? 'rgba(10, 25, 41, 0.7)' : 'rgba(255, 255, 255, 0.7)',
                               borderRadius: 2,
                               border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'}`,
                             }}
                           >
-                            <pre style={{ 
-                              margin: 0, 
+                            <pre style={{
+                              margin: 0,
                               overflow: 'auto',
                               fontFamily: '"Roboto Mono", monospace',
                               fontSize: '0.875rem',
@@ -1577,11 +1613,11 @@ export default function Home() {
                 </AccordionDetails>
               </Accordion>
             ))}
-            
-            <Box 
-              sx={{ 
-                mt: 4, 
-                display: 'flex', 
+
+            <Box
+              sx={{
+                mt: 4,
+                display: 'flex',
                 justifyContent: 'space-between',
                 flexWrap: 'wrap',
                 gap: 2,
@@ -1591,7 +1627,7 @@ export default function Home() {
                 variant="outlined"
                 onClick={() => downloadJson(processedData.script_analysis, 'script_analysis.json')}
                 startIcon={<DownloadIcon />}
-                sx={{ 
+                sx={{
                   borderWidth: 2,
                   px: 3,
                 }}
@@ -1603,20 +1639,20 @@ export default function Home() {
                 onClick={processScheduling}
                 disabled={isLoading}
                 startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <CalendarMonthIcon />}
-                sx={{ 
+                sx={{
                   px: 3,
-                  background: theme.palette.mode === 'dark' 
-                    ? 'linear-gradient(90deg, #738bff, #ff5eb1)' 
+                  background: theme.palette.mode === 'dark'
+                    ? 'linear-gradient(90deg, #738bff, #ff5eb1)'
                     : 'linear-gradient(90deg, #4361ee, #f72585)',
                   '&:hover': {
-                    background: theme.palette.mode === 'dark' 
-                      ? 'linear-gradient(90deg, #5a6ecc, #cc4a8e)' 
+                    background: theme.palette.mode === 'dark'
+                      ? 'linear-gradient(90deg, #5a6ecc, #cc4a8e)'
                       : 'linear-gradient(90deg, #354db8, #c51e6a)',
                   },
                   '&.Mui-disabled': {
                     opacity: 0.5,
-                    background: theme.palette.mode === 'dark' 
-                      ? 'linear-gradient(90deg, #738bff, #ff5eb1)' 
+                    background: theme.palette.mode === 'dark'
+                      ? 'linear-gradient(90deg, #738bff, #ff5eb1)'
                       : 'linear-gradient(90deg, #4361ee, #f72585)',
                     color: 'white',
                   },
@@ -1627,7 +1663,7 @@ export default function Home() {
             </Box>
           </Box>
         );
-        
+
       case 2: // Scheduling
         if (!processedData.schedule) {
           return (
@@ -1646,21 +1682,21 @@ export default function Home() {
             </Box>
           );
         }
-        
+
         return (
           <Box sx={{ mt: 4 }}>
             <Typography variant="h4" gutterBottom>
               Scheduling & Resource Allocation
             </Typography>
-            <Typography variant="body1" paragraph>
+            <Typography variant="body1" sx={{ mb: 2 }}>
               Optimized shooting schedule based on your script analysis.
             </Typography>
-            
+
             <Typography variant="h5" gutterBottom sx={{ mt: 3 }}>
               Shooting Schedule
             </Typography>
-            
-            {processedData.schedule.shooting_days.map((day, index) => (
+
+            {processedData.schedule.shooting_days.map((day: any, index: number) => (
               <Accordion key={index} sx={{ mb: 2 }}>
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                   <Typography variant="subtitle1">
@@ -1669,7 +1705,7 @@ export default function Home() {
                 </AccordionSummary>
                 <AccordionDetails>
                   <Grid container spacing={3}>
-                    <Grid item xs={12} md={6}>
+                    <Grid size={{ xs: 12, md: 6 }}>
                       <Typography variant="body1">
                         <strong>Call Time:</strong> {day.call_time}
                       </Typography>
@@ -1677,28 +1713,28 @@ export default function Home() {
                         <strong>Wrap Time:</strong> {day.wrap_time}
                       </Typography>
                     </Grid>
-                    <Grid item xs={12} md={6}>
+                    <Grid size={{ xs: 12, md: 6 }}>
                       <Typography variant="body1">
                         <strong>Cast Call Times:</strong>
                       </Typography>
                       <Box component="ul" sx={{ pl: 2 }}>
-                        {Object.entries(day.cast_call_times).map(([actor, time], i) => (
+                        {Object.entries(day.cast_call_times).map(([actor, time], i: number) => (
                           <li key={i}>
                             <Typography variant="body2">
-                              <strong>{actor}:</strong> {time}
+                              <strong>{actor}:</strong> {String(time)}
                             </Typography>
                           </li>
                         ))}
                       </Box>
                     </Grid>
-                    <Grid item xs={12}>
+                    <Grid size={{ xs: 12 }}>
                       <Divider sx={{ my: 2 }} />
                       <Typography variant="body1" sx={{ mb: 1 }}>
                         <strong>Scenes:</strong>
                       </Typography>
                       <Grid container spacing={2}>
-                        {day.scenes.map((scene, i) => (
-                          <Grid item xs={12} sm={6} md={4} key={i}>
+                        {day.scenes.map((scene: any, i: number) => (
+                          <Grid size={{ xs: 12, sm: 6, md: 4 }} key={i}>
                             <Card variant="outlined">
                               <CardContent>
                                 <Typography variant="subtitle2">
@@ -1717,7 +1753,7 @@ export default function Home() {
                 </AccordionDetails>
               </Accordion>
             ))}
-            
+
             <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between' }}>
               <Button
                 variant="outlined"
@@ -1738,7 +1774,7 @@ export default function Home() {
             </Box>
           </Box>
         );
-        
+
       case 3: // Budgeting
         if (!processedData.budget) {
           return (
@@ -1757,22 +1793,22 @@ export default function Home() {
             </Box>
           );
         }
-        
+
         return (
           <Box sx={{ mt: 4 }}>
             <Typography variant="h4" gutterBottom>
               Budgeting Module
             </Typography>
-            <Typography variant="body1" paragraph>
+            <Typography variant="body1" sx={{ mb: 2 }}>
               Detailed budget estimates based on your script and schedule.
             </Typography>
-            
+
             <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
               <Typography variant="h5" gutterBottom>
                 Budget Summary
               </Typography>
               <Grid container spacing={3}>
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                   <Card sx={{ height: '100%' }}>
                     <CardContent sx={{ textAlign: 'center' }}>
                       <Typography variant="h6" color="textSecondary" gutterBottom>
@@ -1784,7 +1820,7 @@ export default function Home() {
                     </CardContent>
                   </Card>
                 </Grid>
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                   <Card sx={{ height: '100%' }}>
                     <CardContent sx={{ textAlign: 'center' }}>
                       <Typography variant="h6" color="textSecondary" gutterBottom>
@@ -1796,7 +1832,7 @@ export default function Home() {
                     </CardContent>
                   </Card>
                 </Grid>
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                   <Card sx={{ height: '100%' }}>
                     <CardContent sx={{ textAlign: 'center' }}>
                       <Typography variant="h6" color="textSecondary" gutterBottom>
@@ -1810,12 +1846,12 @@ export default function Home() {
                 </Grid>
               </Grid>
             </Paper>
-            
+
             <Typography variant="h5" gutterBottom>
               Day-wise Budget Breakdown
             </Typography>
-            
-            {processedData.budget.days.map((day, index) => (
+
+            {processedData.budget.days.map((day: any, index: number) => (
               <Accordion key={index} sx={{ mb: 2 }}>
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                   <Typography variant="subtitle1">
@@ -1824,26 +1860,26 @@ export default function Home() {
                 </AccordionSummary>
                 <AccordionDetails>
                   <Grid container spacing={3}>
-                    <Grid item xs={12} md={6}>
+                    <Grid size={{ xs: 12, md: 6 }}>
                       <Typography variant="body1" sx={{ mb: 1 }}>
                         <strong>Category Breakdown:</strong>
                       </Typography>
                       <Box component="ul" sx={{ pl: 2 }}>
-                        {Object.entries(day.categories).map(([category, amount], i) => (
+                        {Object.entries(day.categories).map(([category, amount], i: number) => (
                           <li key={i}>
                             <Typography variant="body2">
-                              <strong>{category}:</strong> ${amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                              <strong>{category}:</strong> ${typeof amount === 'number' ? amount.toLocaleString('en-US', { minimumFractionDigits: 2 }) : String(amount)}
                             </Typography>
                           </li>
                         ))}
                       </Box>
                     </Grid>
-                    <Grid item xs={12} md={6}>
+                    <Grid size={{ xs: 12, md: 6 }}>
                       <Typography variant="body1" sx={{ mb: 1 }}>
                         <strong>Scene Costs:</strong>
                       </Typography>
                       <Box component="ul" sx={{ pl: 2 }}>
-                        {day.scenes.map((scene, i) => (
+                        {day.scenes.map((scene: any, i: number) => (
                           <li key={i}>
                             <Typography variant="body2">
                               <strong>Scene {scene.scene_number}:</strong> ${scene.cost.toLocaleString('en-US', { minimumFractionDigits: 2 })}
@@ -1856,7 +1892,7 @@ export default function Home() {
                 </AccordionDetails>
               </Accordion>
             ))}
-            
+
             <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between' }}>
               <Button
                 variant="outlined"
@@ -1877,7 +1913,7 @@ export default function Home() {
             </Box>
           </Box>
         );
-        
+
       case 4: // One-Liners
         if (!processedData.one_liners) {
           return (
@@ -1896,23 +1932,23 @@ export default function Home() {
             </Box>
           );
         }
-        
+
         return (
           <Box sx={{ mt: 4 }}>
             <Typography variant="h4" gutterBottom>
               One-Liner Creation Module
             </Typography>
-            <Typography variant="body1" paragraph>
+            <Typography variant="body1" sx={{ mb: 2 }}>
               Concise one-line summaries for each scene in your script.
             </Typography>
-            
+
             <Paper elevation={3} sx={{ p: 3 }}>
               <Typography variant="h5" gutterBottom>
                 Scene One-Liners
               </Typography>
               <Grid container spacing={2}>
-                {processedData.one_liners.scenes.map((scene, index) => (
-                  <Grid item xs={12} key={index}>
+                {processedData.one_liners.scenes.map((scene: any, index: number) => (
+                  <Grid size={{ xs: 12 }} key={index}>
                     <Card variant="outlined" sx={{ mb: 1 }}>
                       <CardContent>
                         <Typography variant="subtitle1" gutterBottom>
@@ -1927,7 +1963,7 @@ export default function Home() {
                 ))}
               </Grid>
             </Paper>
-            
+
             <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between' }}>
               <Button
                 variant="outlined"
@@ -1948,7 +1984,7 @@ export default function Home() {
             </Box>
           </Box>
         );
-        
+
       case 5: // Character Breakdown
         if (!processedData.characters) {
           return (
@@ -1967,23 +2003,23 @@ export default function Home() {
             </Box>
           );
         }
-        
+
         return (
           <Box sx={{ mt: 4 }}>
             <Typography variant="h4" gutterBottom>
               Character Breakdown Module
             </Typography>
-            <Typography variant="body1" paragraph>
+            <Typography variant="body1" sx={{ mb: 2 }}>
               Detailed analysis of characters in your script.
             </Typography>
-            
+
             <Typography variant="h5" gutterBottom sx={{ mt: 3 }}>
               Character Profiles
             </Typography>
-            
+
             <Grid container spacing={3}>
-              {processedData.characters.characters.map((character, index) => (
-                <Grid item xs={12} md={6} lg={4} key={index}>
+              {processedData.characters.characters.map((character: any, index: number) => (
+                <Grid size={{ xs: 12, md: 6, lg: 4 }} key={index}>
                   <Card sx={{ height: '100%' }}>
                     <CardContent>
                       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -1994,40 +2030,40 @@ export default function Home() {
                           <Typography variant="h6">
                             {character.name}
                           </Typography>
-                          <Chip 
-                            label={character.role_type} 
-                            size="small" 
+                          <Chip
+                            label={character.role_type}
+                            size="small"
                             color={
-                              character.role_type === 'Lead' ? 'primary' : 
+                              character.role_type === 'Lead' ? 'primary' :
                               character.role_type === 'Supporting' ? 'secondary' : 'default'
                             }
                           />
                         </Box>
                       </Box>
-                      
+
                       <Typography variant="body2" sx={{ mb: 1 }}>
                         <strong>Age:</strong> {character.age}
                       </Typography>
-                      
+
                       <Typography variant="body2" sx={{ mb: 1 }}>
                         <strong>Description:</strong> {character.description}
                       </Typography>
-                      
+
                       <Typography variant="body2" sx={{ mb: 1 }}>
                         <strong>Emotional Arc:</strong> {character.emotional_arc}
                       </Typography>
-                      
+
                       <Typography variant="body2" sx={{ mb: 1 }}>
                         <strong>Screen Time:</strong> {character.screen_time}%
                       </Typography>
-                      
+
                       <Divider sx={{ my: 2 }} />
-                      
+
                       <Typography variant="body2" sx={{ mb: 1 }}>
                         <strong>Appears in Scenes:</strong>
                       </Typography>
                       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                        {character.scenes.map((scene, i) => (
+                        {character.scenes.map((scene: number, i: number) => (
                           <Chip key={i} label={`Scene ${scene}`} size="small" variant="outlined" />
                         ))}
                       </Box>
@@ -2036,7 +2072,7 @@ export default function Home() {
                 </Grid>
               ))}
             </Grid>
-            
+
             <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between' }}>
               <Button
                 variant="outlined"
@@ -2057,7 +2093,7 @@ export default function Home() {
             </Box>
           </Box>
         );
-        
+
       case 6: // System Overview
         if (!processedData.system_sync) {
           return (
@@ -2069,11 +2105,11 @@ export default function Home() {
                 variant="contained"
                 onClick={() => processSystemSync()}
                 disabled={
-                  !processedData.script_analysis || 
-                  !processedData.schedule || 
-                  !processedData.budget || 
-                  !processedData.one_liners || 
-                  !processedData.characters || 
+                  !processedData.script_analysis ||
+                  !processedData.schedule ||
+                  !processedData.budget ||
+                  !processedData.one_liners ||
+                  !processedData.characters ||
                   isLoading
                 }
                 startIcon={isLoading ? <CircularProgress size={20} /> : null}
@@ -2083,22 +2119,22 @@ export default function Home() {
             </Box>
           );
         }
-        
+
         return (
           <Box sx={{ mt: 4 }}>
             <Typography variant="h4" gutterBottom>
               System Synchronization and Overview
             </Typography>
-            <Typography variant="body1" paragraph>
+            <Typography variant="body1" sx={{ mb: 2 }}>
               Comprehensive overview of your entire production.
             </Typography>
-            
+
             <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
               <Typography variant="h5" gutterBottom>
                 Production Overview
               </Typography>
               <Grid container spacing={3}>
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                   <Card sx={{ height: '100%' }}>
                     <CardContent sx={{ textAlign: 'center' }}>
                       <Typography variant="h6" color="textSecondary" gutterBottom>
@@ -2110,7 +2146,7 @@ export default function Home() {
                     </CardContent>
                   </Card>
                 </Grid>
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                   <Card sx={{ height: '100%' }}>
                     <CardContent sx={{ textAlign: 'center' }}>
                       <Typography variant="h6" color="textSecondary" gutterBottom>
@@ -2122,7 +2158,7 @@ export default function Home() {
                     </CardContent>
                   </Card>
                 </Grid>
-                <Grid item xs={12} md={4}>
+                <Grid size={{ xs: 12, md: 4 }}>
                   <Card sx={{ height: '100%' }}>
                     <CardContent sx={{ textAlign: 'center' }}>
                       <Typography variant="h6" color="textSecondary" gutterBottom>
@@ -2136,40 +2172,40 @@ export default function Home() {
                 </Grid>
               </Grid>
             </Paper>
-            
+
             <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
               <Typography variant="h5" gutterBottom>
                 Production Timeline
               </Typography>
               <Grid container spacing={2}>
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <Typography variant="body1">
                     <strong>Start Date:</strong> {processedData.system_sync.start_date}
                   </Typography>
                 </Grid>
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <Typography variant="body1">
                     <strong>End Date:</strong> {processedData.system_sync.end_date}
                   </Typography>
                 </Grid>
               </Grid>
             </Paper>
-            
+
             <Paper elevation={3} sx={{ p: 3 }}>
               <Typography variant="h5" gutterBottom>
                 Data Synchronization Status
               </Typography>
               <Grid container spacing={2}>
-                {Object.entries(processedData.system_sync.sync_status).map(([module, status], index) => (
-                  <Grid item xs={12} sm={6} md={4} key={index}>
+                {Object.entries(processedData.system_sync.sync_status).map(([module, status], index: number) => (
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }} key={index}>
                     <Card variant="outlined">
                       <CardContent>
                         <Typography variant="subtitle1">
                           {module}
                         </Typography>
-                        <Chip 
-                          label={status} 
-                          color={status === 'Synchronized' ? 'success' : 'warning'} 
+                        <Chip
+                          label={String(status)}
+                          color={String(status) === 'Synchronized' ? 'success' : 'warning'}
                           sx={{ mt: 1 }}
                         />
                       </CardContent>
@@ -2178,7 +2214,7 @@ export default function Home() {
                 ))}
               </Grid>
             </Paper>
-            
+
             <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between' }}>
               <Button
                 variant="outlined"
@@ -2197,17 +2233,17 @@ export default function Home() {
             </Box>
           </Box>
         );
-        
+
       case 7: // API Logs
         return (
           <Box sx={{ mt: 4 }}>
             <Typography variant="h4" gutterBottom>
               API Logs and Analytics
             </Typography>
-            <Typography variant="body1" paragraph>
+            <Typography variant="body1" sx={{ mb: 2 }}>
               Detailed logs of API calls made during the production process.
             </Typography>
-            
+
             {isLoading ? (
               <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
                 <CircularProgress />
@@ -2220,7 +2256,7 @@ export default function Home() {
                       API Usage Summary
                     </Typography>
                     <Grid container spacing={3}>
-                      <Grid item xs={12} md={4}>
+                      <Grid size={{ xs: 12, md: 4 }}>
                         <Card sx={{ height: '100%' }}>
                           <CardContent sx={{ textAlign: 'center' }}>
                             <Typography variant="h6" color="textSecondary" gutterBottom>
@@ -2232,7 +2268,7 @@ export default function Home() {
                           </CardContent>
                         </Card>
                       </Grid>
-                      <Grid item xs={12} md={4}>
+                      <Grid size={{ xs: 12, md: 4 }}>
                         <Card sx={{ height: '100%' }}>
                           <CardContent sx={{ textAlign: 'center' }}>
                             <Typography variant="h6" color="textSecondary" gutterBottom>
@@ -2244,7 +2280,7 @@ export default function Home() {
                           </CardContent>
                         </Card>
                       </Grid>
-                      <Grid item xs={12} md={4}>
+                      <Grid size={{ xs: 12, md: 4 }}>
                         <Card sx={{ height: '100%' }}>
                           <CardContent sx={{ textAlign: 'center' }}>
                             <Typography variant="h6" color="textSecondary" gutterBottom>
@@ -2259,23 +2295,23 @@ export default function Home() {
                     </Grid>
                   </Paper>
                 )}
-                
+
                 {apiLogs && apiLogs.length > 0 ? (
                   <>
                     <Typography variant="h5" gutterBottom>
                       Detailed API Logs
                     </Typography>
-                    
+
                     {apiLogs.map((log, index) => (
                       <Accordion key={index} sx={{ mb: 2 }}>
                         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                           <Typography variant="subtitle1">
-                            {log.status === 'success' ? '🟢' : '🔴'} {log.provider.toUpperCase()} - {log.model} - {log.timestamp}
+                            {String(log.status) === 'success' ? '🟢' : '🔴'} {log.provider?.toUpperCase()} - {log.model} - {log.timestamp}
                           </Typography>
                         </AccordionSummary>
                         <AccordionDetails>
                           <Grid container spacing={2}>
-                            <Grid item xs={12} md={6}>
+                            <Grid size={{ xs: 12, md: 6 }}>
                               <Typography variant="body2">
                                 <strong>Duration:</strong> {log.duration.toFixed(2)}s
                               </Typography>
@@ -2286,7 +2322,7 @@ export default function Home() {
                                 <strong>Response Length:</strong> {log.response_length} chars
                               </Typography>
                             </Grid>
-                            <Grid item xs={12} md={6}>
+                            <Grid size={{ xs: 12, md: 6 }}>
                               {log.error && (
                                 <Typography variant="body2" color="error">
                                   <strong>Error:</strong> {log.error}
@@ -2294,7 +2330,7 @@ export default function Home() {
                               )}
                             </Grid>
                             {log.metadata && (
-                              <Grid item xs={12}>
+                              <Grid size={{ xs: 12 }}>
                                 <Typography variant="body2">
                                   <strong>Metadata:</strong>
                                 </Typography>
@@ -2309,7 +2345,7 @@ export default function Home() {
                         </AccordionDetails>
                       </Accordion>
                     ))}
-                    
+
                     <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
                       <Button
                         variant="contained"
@@ -2331,7 +2367,7 @@ export default function Home() {
             )}
           </Box>
         );
-        
+
       default:
         return (
           <Box sx={{ mt: 4, textAlign: 'center' }}>
@@ -2348,14 +2384,14 @@ export default function Home() {
       <CssBaseline />
       <Box sx={{ display: 'flex' }}>
         {/* App Bar */}
-        <AppBar 
-          position="fixed" 
+        <AppBar
+          position="fixed"
           elevation={0}
-          sx={{ 
+          sx={{
             zIndex: (theme) => theme.zIndex.drawer + 1,
             backdropFilter: 'blur(8px)',
-            backgroundColor: theme.palette.mode === 'dark' 
-              ? 'rgba(19, 47, 76, 0.9)' 
+            backgroundColor: theme.palette.mode === 'dark'
+              ? 'rgba(19, 47, 76, 0.9)'
               : 'rgba(255, 255, 255, 0.9)',
             borderBottom: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'}`,
           }}
@@ -2366,25 +2402,25 @@ export default function Home() {
               aria-label="open drawer"
               edge="start"
               onClick={handleDrawerToggle}
-              sx={{ 
+              sx={{
                 mr: 2,
                 transition: 'transform 0.2s',
                 '&:hover': {
                   transform: 'scale(1.1)',
-                  backgroundColor: theme.palette.mode === 'dark' 
-                    ? 'rgba(255,255,255,0.1)' 
+                  backgroundColor: theme.palette.mode === 'dark'
+                    ? 'rgba(255,255,255,0.1)'
                     : 'rgba(0,0,0,0.05)',
                 }
               }}
             >
               <MenuIcon />
             </IconButton>
-            <Box 
-              sx={{ 
-                display: 'flex', 
+            <Box
+              sx={{
+                display: 'flex',
                 alignItems: 'center',
-                background: theme.palette.mode === 'dark' 
-                  ? 'linear-gradient(90deg, #738bff, #ff5eb1)' 
+                background: theme.palette.mode === 'dark'
+                  ? 'linear-gradient(90deg, #738bff, #ff5eb1)'
                   : 'linear-gradient(90deg, #4361ee, #f72585)',
                 borderRadius: '50%',
                 p: 1,
@@ -2396,15 +2432,15 @@ export default function Home() {
             >
               <MovieIcon sx={{ color: '#fff' }} />
             </Box>
-            <Typography 
-              variant="h6" 
-              noWrap 
-              component="div" 
-              sx={{ 
+            <Typography
+              variant="h6"
+              noWrap
+              component="div"
+              sx={{
                 flexGrow: 1,
                 fontWeight: 700,
-                background: theme.palette.mode === 'dark' 
-                  ? 'linear-gradient(90deg, #a4b8ff, #ff90d1)' 
+                background: theme.palette.mode === 'dark'
+                  ? 'linear-gradient(90deg, #a4b8ff, #ff90d1)'
                   : 'linear-gradient(90deg, #4361ee, #f72585)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
@@ -2413,16 +2449,16 @@ export default function Home() {
             >
               Film Production AI Assistant
             </Typography>
-            <IconButton 
-              color="inherit" 
+            <IconButton
+              color="inherit"
               onClick={toggleTheme}
-              sx={{ 
+              sx={{
                 ml: 1,
                 transition: 'all 0.3s ease',
                 transform: darkMode ? 'rotate(180deg)' : 'rotate(0deg)',
                 '&:hover': {
-                  backgroundColor: theme.palette.mode === 'dark' 
-                    ? 'rgba(255,255,255,0.1)' 
+                  backgroundColor: theme.palette.mode === 'dark'
+                    ? 'rgba(255,255,255,0.1)'
                     : 'rgba(0,0,0,0.05)',
                 }
               }}
@@ -2431,7 +2467,7 @@ export default function Home() {
             </IconButton>
           </Toolbar>
         </AppBar>
-        
+
         {/* Drawer */}
         <Drawer
           variant="temporary"
@@ -2444,31 +2480,31 @@ export default function Home() {
               width: 280,
               boxSizing: 'border-box',
               borderRight: 'none',
-              boxShadow: theme.palette.mode === 'dark' 
-                ? '5px 0 20px rgba(0,0,0,0.5)' 
+              boxShadow: theme.palette.mode === 'dark'
+                ? '5px 0 20px rgba(0,0,0,0.5)'
                 : '5px 0 20px rgba(0,0,0,0.1)',
-              background: theme.palette.mode === 'dark' 
-                ? 'linear-gradient(180deg, #132f4c 0%, #0a1929 100%)' 
+              background: theme.palette.mode === 'dark'
+                ? 'linear-gradient(180deg, #132f4c 0%, #0a1929 100%)'
                 : 'linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%)',
             },
           }}
         >
-          <Box 
-            sx={{ 
-              display: 'flex', 
-              alignItems: 'center', 
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
               justifyContent: 'space-between',
-              p: 2, 
+              p: 2,
               pt: 3,
               pb: 2,
               borderBottom: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'}`,
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Box 
-                sx={{ 
-                  background: theme.palette.mode === 'dark' 
-                    ? 'linear-gradient(90deg, #738bff, #ff5eb1)' 
+              <Box
+                sx={{
+                  background: theme.palette.mode === 'dark'
+                    ? 'linear-gradient(90deg, #738bff, #ff5eb1)'
                     : 'linear-gradient(90deg, #4361ee, #f72585)',
                   borderRadius: '50%',
                   p: 1,
@@ -2489,18 +2525,20 @@ export default function Home() {
           <Box sx={{ overflow: 'auto', p: 2 }}>
             <List>
               {steps.map((step, index) => (
-                <ListItem 
-                  button 
+                <ListItem
                   key={index}
                   onClick={() => handleStepClick(index)}
-                  selected={activeStep === index}
-                  sx={{ 
+                  sx={{
+                    backgroundColor: activeStep === index ?
+                      (theme.palette.mode === 'dark' ? 'rgba(115, 139, 255, 0.15)' : 'rgba(67, 97, 238, 0.08)') :
+                      'transparent',
                     borderRadius: 2,
                     mb: 1,
                     py: 1.5,
                     transition: 'all 0.2s ease',
                     position: 'relative',
                     overflow: 'hidden',
+                    cursor: 'pointer',
                     '&::before': activeStep === index ? {
                       content: '""',
                       position: 'absolute',
@@ -2508,13 +2546,13 @@ export default function Home() {
                       top: 0,
                       bottom: 0,
                       width: '4px',
-                      background: theme.palette.mode === 'dark' 
-                        ? 'linear-gradient(180deg, #738bff, #ff5eb1)' 
+                      background: theme.palette.mode === 'dark'
+                        ? 'linear-gradient(180deg, #738bff, #ff5eb1)'
                         : 'linear-gradient(180deg, #4361ee, #f72585)',
                       borderRadius: '0 4px 4px 0',
                     } : {},
-                    bgcolor: activeStep === index ? 
-                      (theme.palette.mode === 'dark' ? 'rgba(115, 139, 255, 0.15)' : 'rgba(67, 97, 238, 0.08)') : 
+                    bgcolor: activeStep === index ?
+                      (theme.palette.mode === 'dark' ? 'rgba(115, 139, 255, 0.15)' : 'rgba(67, 97, 238, 0.08)') :
                       'transparent',
                     '&:hover': {
                       bgcolor: theme.palette.mode === 'dark' ? 'rgba(115, 139, 255, 0.1)' : 'rgba(67, 97, 238, 0.05)',
@@ -2522,25 +2560,27 @@ export default function Home() {
                     }
                   }}
                 >
-                  <ListItemIcon sx={{ 
-                    color: activeStep === index ? 
-                      (theme.palette.mode === 'dark' ? '#738bff' : '#4361ee') : 
+                  <ListItemIcon sx={{
+                    color: activeStep === index ?
+                      (theme.palette.mode === 'dark' ? '#738bff' : '#4361ee') :
                       'inherit',
                     minWidth: 45,
                   }}>
                     {step.icon}
                   </ListItemIcon>
-                  <ListItemText 
-                    primary={step.label} 
-                    primaryTypographyProps={{ 
-                      fontWeight: activeStep === index ? 600 : 400,
-                      color: activeStep === index ? 
-                        (theme.palette.mode === 'dark' ? '#738bff' : '#4361ee') : 
-                        'inherit',
+                  <ListItemText
+                    primary={step.label}
+                    sx={{
+                      '& .MuiTypography-root': {
+                        fontWeight: activeStep === index ? 600 : 400,
+                        color: activeStep === index ?
+                          (theme.palette.mode === 'dark' ? '#738bff' : '#4361ee') :
+                          'inherit',
+                      }
                     }}
                   />
                   {activeStep === index && (
-                    <ChevronRightIcon sx={{ 
+                    <ChevronRightIcon sx={{
                       color: theme.palette.mode === 'dark' ? '#738bff' : '#4361ee',
                       opacity: 0.7,
                     }} />
@@ -2550,16 +2590,16 @@ export default function Home() {
             </List>
           </Box>
         </Drawer>
-        
+
         {/* Main content */}
-        <Box 
-          component="main" 
-          sx={{ 
-            flexGrow: 1, 
+        <Box
+          component="main"
+          sx={{
+            flexGrow: 1,
             p: { xs: 2, sm: 3, md: 4 },
             transition: 'all 0.3s ease',
-            background: theme.palette.mode === 'dark' 
-              ? 'linear-gradient(135deg, #0a1929 0%, #132f4c 100%)' 
+            background: theme.palette.mode === 'dark'
+              ? 'linear-gradient(135deg, #0a1929 0%, #132f4c 100%)'
               : 'linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%)',
             minHeight: '100vh',
             display: 'flex',
@@ -2567,23 +2607,23 @@ export default function Home() {
           }}
         >
           <Toolbar />
-          
+
           {/* Progress indicator */}
-          <Box 
-            sx={{ 
-              display: 'flex', 
-              alignItems: 'center', 
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
               justifyContent: 'space-between',
               mb: 2,
               px: { xs: 0, sm: 2 },
             }}
           >
-            <Typography 
-              variant="h5" 
-              sx={{ 
+            <Typography
+              variant="h5"
+              sx={{
                 fontWeight: 700,
-                background: theme.palette.mode === 'dark' 
-                  ? 'linear-gradient(90deg, #a4b8ff, #ff90d1)' 
+                background: theme.palette.mode === 'dark'
+                  ? 'linear-gradient(90deg, #a4b8ff, #ff90d1)'
                   : 'linear-gradient(90deg, #4361ee, #f72585)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
@@ -2592,34 +2632,34 @@ export default function Home() {
             >
               {steps[activeStep].label}
             </Typography>
-            <Chip 
-              label={`Step ${activeStep + 1} of ${steps.length}`} 
-              color="primary" 
+            <Chip
+              label={`Step ${activeStep + 1} of ${steps.length}`}
+              color="primary"
               variant="outlined"
-              sx={{ 
+              sx={{
                 fontWeight: 600,
                 borderWidth: 2,
                 px: 1,
-              }} 
+              }}
             />
           </Box>
-          
+
           {/* Stepper */}
-          <Paper 
-            elevation={0} 
-            sx={{ 
-              p: { xs: 2, sm: 3 }, 
-              mb: 4, 
+          <Paper
+            elevation={0}
+            sx={{
+              p: { xs: 2, sm: 3 },
+              mb: 4,
               borderRadius: 3,
               border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'}`,
               background: theme.palette.mode === 'dark' ? 'rgba(19, 47, 76, 0.5)' : 'rgba(255, 255, 255, 0.8)',
               backdropFilter: 'blur(10px)',
             }}
           >
-            <Stepper 
-              activeStep={activeStep} 
-              alternativeLabel 
-              sx={{ 
+            <Stepper
+              activeStep={activeStep}
+              alternativeLabel
+              sx={{
                 '& .MuiStepConnector-line': {
                   minHeight: 3,
                   borderTopWidth: 3,
@@ -2639,7 +2679,7 @@ export default function Home() {
               }}
             >
               {steps.map((step, index) => (
-                <Step 
+                <Step
                   key={index}
                   completed={activeStep > index}
                   sx={{
@@ -2651,31 +2691,29 @@ export default function Home() {
                     },
                   }}
                 >
-                  <StepLabel 
-                    StepIconProps={{
-                      sx: {
+                  <StepLabel
+                    sx={{
+                      cursor: 'pointer',
+                      '& .MuiStepIcon-root': {
                         fontSize: '1.5rem',
                         ...(activeStep === index && {
                           color: theme.palette.mode === 'dark' ? '#738bff' : '#4361ee',
-                          boxShadow: theme.palette.mode === 'dark' 
-                            ? '0 0 15px rgba(115, 139, 255, 0.5)' 
+                          boxShadow: theme.palette.mode === 'dark'
+                            ? '0 0 15px rgba(115, 139, 255, 0.5)'
                             : '0 0 15px rgba(67, 97, 238, 0.5)',
                           borderRadius: '50%',
                           zIndex: 1,
                         }),
-                      }
-                    }}
-                    onClick={() => handleStepClick(index)}
-                    sx={{ 
-                      cursor: 'pointer',
+                      },
                       '& .MuiStepLabel-label': {
                         mt: 1,
                         fontWeight: activeStep === index ? 600 : 400,
-                        color: activeStep === index 
+                        color: activeStep === index
                           ? (theme.palette.mode === 'dark' ? '#738bff' : '#4361ee')
                           : 'inherit',
                       },
                     }}
+                    onClick={() => handleStepClick(index)}
                   >
                     {step.label}
                   </StepLabel>
@@ -2683,13 +2721,13 @@ export default function Home() {
               ))}
             </Stepper>
           </Paper>
-          
+
           {/* Step content */}
-          <Paper 
-            elevation={0} 
-            sx={{ 
-              p: { xs: 2, sm: 3, md: 4 }, 
-              mb: 4, 
+          <Paper
+            elevation={0}
+            sx={{
+              p: { xs: 2, sm: 3, md: 4 },
+              mb: 4,
               borderRadius: 3,
               flexGrow: 1,
               border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'}`,
@@ -2711,12 +2749,12 @@ export default function Home() {
           >
             {getStepContent(activeStep)}
           </Paper>
-          
+
           {/* Navigation buttons */}
-          <Box 
-            sx={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
               mb: 4,
               px: { xs: 0, sm: 2 },
             }}
@@ -2726,7 +2764,7 @@ export default function Home() {
               disabled={activeStep === 0}
               onClick={handleBack}
               startIcon={<ChevronLeftIcon />}
-              sx={{ 
+              sx={{
                 borderWidth: 2,
                 px: 3,
                 '&.Mui-disabled': {
@@ -2745,20 +2783,20 @@ export default function Home() {
               }
               onClick={activeStep === 0 && scriptText ? processScript : handleNext}
               endIcon={<ChevronRightIcon />}
-              sx={{ 
+              sx={{
                 px: 3,
-                background: theme.palette.mode === 'dark' 
-                  ? 'linear-gradient(90deg, #738bff, #ff5eb1)' 
+                background: theme.palette.mode === 'dark'
+                  ? 'linear-gradient(90deg, #738bff, #ff5eb1)'
                   : 'linear-gradient(90deg, #4361ee, #f72585)',
                 '&:hover': {
-                  background: theme.palette.mode === 'dark' 
-                    ? 'linear-gradient(90deg, #5a6ecc, #cc4a8e)' 
+                  background: theme.palette.mode === 'dark'
+                    ? 'linear-gradient(90deg, #5a6ecc, #cc4a8e)'
                     : 'linear-gradient(90deg, #354db8, #c51e6a)',
                 },
                 '&.Mui-disabled': {
                   opacity: 0.5,
-                  background: theme.palette.mode === 'dark' 
-                    ? 'linear-gradient(90deg, #738bff, #ff5eb1)' 
+                  background: theme.palette.mode === 'dark'
+                    ? 'linear-gradient(90deg, #738bff, #ff5eb1)'
                     : 'linear-gradient(90deg, #4361ee, #f72585)',
                   color: 'white',
                 },
@@ -2767,13 +2805,13 @@ export default function Home() {
               {activeStep === 0 && scriptText ? 'Process Script' : 'Next'}
             </Button>
           </Box>
-          
+
           {/* Footer */}
-          <Box 
-            sx={{ 
-              mt: 'auto', 
+          <Box
+            sx={{
+              mt: 'auto',
               pt: 4,
-              pb: 2, 
+              pb: 2,
               textAlign: 'center',
               opacity: 0.8,
               transition: 'opacity 0.3s ease',
@@ -2783,19 +2821,19 @@ export default function Home() {
             }}
           >
             <Divider sx={{ mb: 2 }} />
-            <Box 
-              sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
                 justifyContent: 'center',
                 gap: 1,
               }}
             >
               <MovieIcon fontSize="small" color="primary" />
-              <Typography 
-                variant="body2" 
+              <Typography
+                variant="body2"
                 color="textSecondary"
-                sx={{ 
+                sx={{
                   fontWeight: 500,
                   letterSpacing: '0.02em',
                 }}
