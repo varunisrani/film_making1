@@ -563,18 +563,18 @@ export default function Home() {
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
   };
 
-  const handleStepClick = (step) => {
+  const handleStepClick = (step: number) => {
     setActiveStep(step);
     setDrawerOpen(false);
   };
 
   // Handle script upload
-  const handleScriptUpload = (event) => {
-    const file = event.target.files[0];
+  const handleScriptUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = (e) => {
-        setScriptText(e.target.result);
+      reader.onload = (e: ProgressEvent<FileReader>) => {
+        setScriptText(e.target?.result as string);
       };
       reader.readAsText(file);
     }
