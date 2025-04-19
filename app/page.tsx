@@ -47,7 +47,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import MovieIcon from '@mui/icons-material/Movie';
-import DownloadIcon from '@mui/icons-material/Download';
+
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import InfoIcon from '@mui/icons-material/Info';
@@ -936,18 +936,7 @@ export default function Home() {
     }
   };
 
-  // Download JSON data
-  const downloadJson = (data: unknown, filename: string) => {
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
+  // JSON download functionality has been removed
 
   // Fetch API logs when reaching the logs step
   useEffect(() => {
@@ -1723,17 +1712,7 @@ export default function Home() {
                 gap: 2,
               }}
             >
-              <Button
-                variant="outlined"
-                onClick={() => downloadJson(processedData.script_analysis, 'script_analysis.json')}
-                startIcon={<DownloadIcon />}
-                sx={{
-                  borderWidth: 2,
-                  px: 3,
-                }}
-              >
-                Export Analysis
-              </Button>
+
               <Button
                 variant="contained"
                 onClick={processScheduling}
@@ -1854,14 +1833,7 @@ export default function Home() {
               </Accordion>
             ))}
 
-            <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between' }}>
-              <Button
-                variant="outlined"
-                onClick={() => downloadJson(processedData.schedule, 'shooting_schedule.json')}
-                startIcon={<DownloadIcon />}
-              >
-                Download Schedule (JSON)
-              </Button>
+            <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
               <Button
                 variant="contained"
                 color="primary"
@@ -1993,14 +1965,7 @@ export default function Home() {
               </Accordion>
             ))}
 
-            <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between' }}>
-              <Button
-                variant="outlined"
-                onClick={() => downloadJson(processedData.budget, 'budget_estimate.json')}
-                startIcon={<DownloadIcon />}
-              >
-                Download Budget (JSON)
-              </Button>
+            <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
               <Button
                 variant="contained"
                 color="primary"
@@ -2064,14 +2029,7 @@ export default function Home() {
               </Grid>
             </Paper>
 
-            <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between' }}>
-              <Button
-                variant="outlined"
-                onClick={() => downloadJson(processedData.one_liners, 'scene_one_liners.json')}
-                startIcon={<DownloadIcon />}
-              >
-                Download One-Liners (JSON)
-              </Button>
+            <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
               <Button
                 variant="contained"
                 color="primary"
@@ -2173,14 +2131,7 @@ export default function Home() {
               ))}
             </Grid>
 
-            <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between' }}>
-              <Button
-                variant="outlined"
-                onClick={() => downloadJson(processedData.characters, 'character_breakdown.json')}
-                startIcon={<DownloadIcon />}
-              >
-                Download Character Breakdown (JSON)
-              </Button>
+            <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
               <Button
                 variant="contained"
                 color="primary"
@@ -2315,14 +2266,7 @@ export default function Home() {
               </Grid>
             </Paper>
 
-            <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between' }}>
-              <Button
-                variant="outlined"
-                onClick={() => downloadJson(processedData, 'film_production_data.json')}
-                startIcon={<DownloadIcon />}
-              >
-                Download Complete Project Data (JSON)
-              </Button>
+            <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
               <Button
                 variant="contained"
                 color="primary"
